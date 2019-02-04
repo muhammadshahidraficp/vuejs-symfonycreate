@@ -26,9 +26,6 @@ class MovieController extends ApiController{
 	* @Route("/movies", methods="POST")
 	*/
 	public function create(Request $request, MovieRepository $movieRepository, EntityManagerInterface $em){
-		
-		echo "x";
-		
 
 		//$request=$this->transformJsonBody($request);
 		$request_data = $request->request->all();
@@ -45,7 +42,7 @@ class MovieController extends ApiController{
 		//persist the new movie record
 		$movie = new Movie;
 		$movie->setTitle($request->get('title'));
-		$movie->setCount(0);
+		$movie->setCount($request->get('count'));
 		$em->persist($movie);
 		$em->flush();
 
@@ -53,16 +50,19 @@ class MovieController extends ApiController{
 	}
 
 	/**
-	* @Route("/movies/{id}/count", methods="POST")
+	* @Route("/update", methods="POST")
 	*/
 
-	public function increaseCount($id,EntityManagerInterface $em,MovieRepository $movieRepository){
-		$movie=$MovieRepository->find($id);
+	public function Update(Request $request,EntityManagerInterface $em,MovieRepository $movieRepository){
+		$request_data= $request->request->all();
+		$id=$request_data['id'];
+		//print_r($request_data);
+		$movie=$movieRepository->find($id);
 		if(!$movie){
 			return $this->respondNotFound();
 		}
-
-		$movie->setCount($movie->getCount()+1);
+		$movie->setTitle($request->get('title'));
+		$movie->setCount($request->get('count'));
 		$em->persist($movie);
 		$em->flush();
 
@@ -71,4 +71,27 @@ class MovieController extends ApiController{
 		]);
 	}
 
+/**
+	* @Route("/delete", methods="POST")
+	*/
+
+	public function Delete(Request $request,EntityManagerInterface $em,MovieRepository $movieRepository){
+		$request_data= $request->request->all();
+		print_r($request_data);
+		$id=$request_data['id'];
+		$movie=$movieRepository->find($id);
+		if(!$movie){
+			return $this->respondNotFound();
+		}
+		
+
+		$em->remove($movie);
+  
+       	$em->flush(); 
+
+
+		return $this->respond([
+			'count'=>$movie->getCount()
+		]);
+	}
 }
